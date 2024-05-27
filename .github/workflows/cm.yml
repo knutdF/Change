@@ -1,36 +1,58 @@
-# This is a basic workflow to help you get started with Actions
+name: Issue Change Request
 
-name: CI
-
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  issues:
+    types: [opened]
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  issue_change_request:
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
+    - name: Set Issue to Specific Status
+      if: github.event.issue.state == 'open'
+      run: |
+        ISSUE_NUMBER=${{ github.event.issue.number }}
+        ISSUE_TITLE=${{ github.event.issue.title }}
+        ISSUE_BODY=${{ github.event.issue.body }}
+        
+        # Here you can use GitHub API to set the issue status if you have a specific label or status mechanism
+        curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/${{ github.repository }}/issues/${ISSUE_NUMBER}/labels \
+          -d '{"labels":["change-request"]}'
+          
+    - name: Create Change Request Document
+      run: |
+        ISSUE_NUMBER=${{ github.event.issue.number }}
+        ISSUE_TITLE=${{ github.event.issue.title }}
+        ISSUE_BODY=${{ github.event.issue.body }}
+        DATE=$(date +'%Y-%m-%d')
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+        # Create a new markdown file with the issue content
+        FILENAME="change-requests/CR_${ISSUE_NUMBER}_${DATE}.md"
+        echo "# Change Request: ${ISSUE_TITLE}" > $FILENAME
+        echo "Issue Number: #${ISSUE_NUMBER}" >> $FILENAME
+        echo "Date: ${DATE}" >> $FILENAME
+        echo "" >> $FILENAME
+        echo "${ISSUE_BODY}" >> $FILENAME
+
+        # Configure Git and commit the new file
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git checkout -b add-change-request-${ISSUE_NUMBER}
+        git add $FILENAME
+        git commit -m "Add Change Request for Issue #${ISSUE_NUMBER}"
+        git push origin add-change-request-${ISSUE_NUMBER}
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "Add Change Request for Issue #${{ github.event.issue.number }}"
+        branch: add-change-request-${{ github.event.issue.number }}
+        title: "Change Request for Issue #${{ github.event.issue.number }}"
+        body: "This PR adds a change request document for issue #${{ github.event.issue.number }}."
