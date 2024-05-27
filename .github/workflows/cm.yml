@@ -25,6 +25,9 @@ jobs:
           https://api.github.com/repos/${{ github.repository }}/issues/${ISSUE_NUMBER}/labels \
           -d '{"labels":["change-request"]}'
           
+    - name: Install Git
+      run: sudo apt-get install -y git
+
     - name: Create Change Request Document
       run: |
         ISSUE_NUMBER=${{ github.event.issue.number }}
@@ -34,6 +37,7 @@ jobs:
 
         # Create a new markdown file with the issue content
         FILENAME="change-requests/CR_${ISSUE_NUMBER}_${DATE}.md"
+        mkdir -p change-requests
         echo "# Change Request: ${ISSUE_TITLE}" > $FILENAME
         echo "Issue Number: #${ISSUE_NUMBER}" >> $FILENAME
         echo "Date: ${DATE}" >> $FILENAME
