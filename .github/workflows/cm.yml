@@ -10,7 +10,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4  # Aktualisiert auf die neueste Version
 
     - name: Set Issue to Specific Status
       if: github.event.issue.state == 'open'
@@ -19,14 +19,16 @@ jobs:
         ISSUE_TITLE=${{ github.event.issue.title }}
         ISSUE_BODY=${{ github.event.issue.body }}
         
-        # Here you can use GitHub API to set the issue status if you have a specific label or status mechanism
+        echo "Setting issue status..."
+        # Hier kannst du GitHub API verwenden, um den Issue-Status zu setzen, wenn du einen spezifischen Label- oder Statusmechanismus hast
         curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
           -H "Accept: application/vnd.github.v3+json" \
           https://api.github.com/repos/${{ github.repository }}/issues/${ISSUE_NUMBER}/labels \
           -d '{"labels":["change-request"]}'
-          
+        echo "Issue status set to 'change-request'."
+
     - name: Install Git
-      run: sudo apt-get install -y git
+      run: sudo apt-get update && sudo apt-get install -y git
 
     - name: Create Change Request Document
       run: |
@@ -35,6 +37,7 @@ jobs:
         ISSUE_BODY=${{ github.event.issue.body }}
         DATE=$(date +'%Y-%m-%d')
 
+        echo "Creating Change Request document..."
         # Create a new markdown file with the issue content
         FILENAME="change-requests/CR_${ISSUE_NUMBER}_${DATE}.md"
         mkdir -p change-requests
@@ -43,6 +46,7 @@ jobs:
         echo "Date: ${DATE}" >> $FILENAME
         echo "" >> $FILENAME
         echo "${ISSUE_BODY}" >> $FILENAME
+        echo "Change Request document created at $FILENAME."
 
         # Configure Git and commit the new file
         git config --global user.name "github-actions[bot]"
@@ -51,9 +55,10 @@ jobs:
         git add $FILENAME
         git commit -m "Add Change Request for Issue #${ISSUE_NUMBER}"
         git push origin add-change-request-${ISSUE_NUMBER}
+        echo "Change Request document committed and pushed."
 
     - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v3
+      uses: peter-evans/create-pull-request@v5  # Aktualisiert auf die neueste Version
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: "Add Change Request for Issue #${{ github.event.issue.number }}"
