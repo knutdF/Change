@@ -38,9 +38,22 @@ jobs:
         DATE=$(date +'%Y-%m-%d')
         ISSUE_DIR="change-requests/CR_${ISSUE_NUMBER}_${DATE}"
 
+        echo "ISSUE_NUMBER=${ISSUE_NUMBER}"
+        echo "ISSUE_TITLE=${ISSUE_TITLE}"
+        echo "ISSUE_BODY=${ISSUE_BODY}"
+        echo "DATE=${DATE}"
+        echo "ISSUE_DIR=${ISSUE_DIR}"
+
         echo "Creating Change Request directory and document..."
         # Create a new directory for the issue
         mkdir -p $ISSUE_DIR
+
+        # Verify directory creation
+        if [ -d "$ISSUE_DIR" ]; then
+          echo "Directory $ISSUE_DIR created successfully."
+        else
+          echo "Failed to create directory $ISSUE_DIR."
+        fi
 
         # Create a markdown file with the ISO 13485 change request form
         FORM_FILE="$ISSUE_DIR/ISO_13485_Change_Request_Form.md"
@@ -58,22 +71,35 @@ jobs:
 
         echo "Change Request form created at $FORM_FILE."
 
+        # Verify file creation
+        if [ -f "$FORM_FILE" ]; then
+          echo "File $FORM_FILE created successfully."
+        else
+          echo "Failed to create file $FORM_FILE."
+        fi
+
     - name: Commit and Push Changes
       run: |
+        echo "Configuring Git..."
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+        echo "Creating new branch and committing changes..."
         git checkout -b add-change-request-${ISSUE_NUMBER}
         git add change-requests/
         git commit -m "Add ISO 13485 Change Request Form for Issue #${ISSUE_NUMBER}"
+
+        echo "Pushing changes to new branch..."
         git push origin add-change-request-${ISSUE_NUMBER}
-        echo "Change Request directory and document committed and pushed."
+
+        echo "Changes committed and pushed to branch add-change-request-${ISSUE_NUMBER}."
 
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v5  # Updated to the latest version
       with:
         token: ${{ secrets.MY_GITHUB_TOKEN }}
         commit-message: "Add ISO 13485 Change Request Form for Issue #${{ github.event.issue.number }}"
-        branch: add-change-request-${{ github.event.issue.number }}
+        branch: add-change-request-${{{ github.event.issue.number }}
         base: main
         title: "ISO 13485 Change Request Form for Issue #${{ github.event.issue.number }}"
         body: "This PR adds an ISO 13485 change request form for issue #${{ github.event.issue.number }}."
