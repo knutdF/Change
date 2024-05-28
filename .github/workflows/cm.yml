@@ -29,7 +29,7 @@ jobs:
 
         echo "Assigning issue to project..."
         # Use GitHub API to assign the issue to the project "Change"
-        PROJECT_ID=<YOUR_PROJECT_ID>
+        PROJECT_ID=<1>
         curl -X POST -H "Authorization: token ${{ secrets.MY_GITHUB_TOKEN }}" \
           -H "Accept: application/vnd.github.v3+json" \
           -d '{"content_type":"Issue","content_id":'${ISSUE_NUMBER}'}' \
