@@ -101,7 +101,7 @@ jobs:
         fi
 
         echo "Pushing changes to new branch ${BRANCH_NAME}..."
-        git push origin ${BRANCH_NAME}
+        git push origin ${BRANCH_NAME} || git push origin ${BRANCH_NAME} --force
 
         echo "Changes committed and pushed to branch ${BRANCH_NAME}."
 
