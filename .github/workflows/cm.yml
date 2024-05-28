@@ -34,7 +34,7 @@ jobs:
       run: |
         ISSUE_NUMBER=${{ github.event.issue.number }}
         ISSUE_TITLE="${{ github.event.issue.title }}"
-        ISSUE_BODY="${{ github.event.issue.body }}
+        ISSUE_BODY="${{ github.event.issue.body }}"
         DATE=$(date +'%Y-%m-%d')
         ISSUE_DIR="change-requests/CR_${ISSUE_NUMBER}_${DATE}"
 
