@@ -21,7 +21,7 @@ jobs:
 
         echo "Setting issue status..."
         # Hier kannst du GitHub API verwenden, um den Issue-Status zu setzen, wenn du einen spezifischen Label- oder Statusmechanismus hast
-        curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+        curl -X POST -H "Authorization: token ${{ secrets.MY_GITHUB_TOKEN }}" \
           -H "Accept: application/vnd.github.v3+json" \
           https://api.github.com/repos/${{ github.repository }}/issues/${ISSUE_NUMBER}/labels \
           -d '{"labels":["change-request"]}'
@@ -60,7 +60,7 @@ jobs:
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v5  # Aktualisiert auf die neueste Version
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.MY_GITHUB_TOKEN }}
         commit-message: "Add Change Request for Issue #${{ github.event.issue.number }}"
         branch: add-change-request-${{ github.event.issue.number }}
         title: "Change Request for Issue #${{ github.event.issue.number }}"
