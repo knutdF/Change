@@ -89,6 +89,12 @@ jobs:
         git add change-requests/
         git commit -m "Add ISO 13485 Change Request Form for Issue #${ISSUE_NUMBER}"
 
+        echo "Fetching latest changes from remote..."
+        git fetch origin
+
+        echo "Rebasing changes..."
+        git rebase origin/main
+
         echo "Pushing changes to new branch..."
         git push origin add-change-request-${ISSUE_NUMBER}
 
