@@ -58,12 +58,12 @@ jobs:
 
         echo "Change Request form created at $FORM_FILE."
 
-        # Configure Git and commit the new file
+    - name: Commit and Push Changes
+      run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git checkout main
         git checkout -b add-change-request-${ISSUE_NUMBER}
-        git add $ISSUE_DIR
+        git add change-requests/
         git commit -m "Add ISO 13485 Change Request Form for Issue #${ISSUE_NUMBER}"
         git push origin add-change-request-${ISSUE_NUMBER}
         echo "Change Request directory and document committed and pushed."
