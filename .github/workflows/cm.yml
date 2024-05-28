@@ -12,7 +12,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4  # Updated to the latest version
 
-    - name: Set Issue to Specific Status
+    - name: Set Issue to Specific Status and Assign to Project
       if: github.event.issue.state == 'open'
       run: |
         ISSUE_NUMBER=${{ github.event.issue.number }}
@@ -27,10 +27,19 @@ jobs:
           -d '{"labels":["change-request"]}'
         echo "Issue status set to 'change-request'."
 
+        echo "Assigning issue to project..."
+        # Use GitHub API to assign the issue to the project "Change"
+        PROJECT_ID=<YOUR_PROJECT_ID>
+        curl -X POST -H "Authorization: token ${{ secrets.MY_GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          -d '{"content_type":"Issue","content_id":'${ISSUE_NUMBER}'}' \
+          https://api.github.com/projects/${PROJECT_ID}/columns/cards
+        echo "Issue assigned to project 'Change'."
+
     - name: Install Git
       run: sudo apt-get update && sudo apt-get install -y git
 
-    - name: Create Change Request Folder and Document
+    - name: Create Change Request Folder and Document in Main Branch
       run: |
         ISSUE_NUMBER=${{ github.event.issue.number }}
         ISSUE_TITLE="${{ github.event.issue.title }}"
@@ -44,7 +53,7 @@ jobs:
         echo "DATE=${DATE}"
         echo "ISSUE_DIR=${ISSUE_DIR}"
 
-        echo "Creating Change Request directory and document..."
+        echo "Creating Change Request directory and document in main branch..."
         # Create a new directory for the issue
         mkdir -p $ISSUE_DIR
 
@@ -78,39 +87,15 @@ jobs:
           echo "Failed to create file $FORM_FILE."
         fi
 
-    - name: Commit and Push Changes
-      run: |
         echo "Configuring Git..."
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-        BRANCH_NAME="add-change-request-${ISSUE_NUMBER}"
-        echo "Creating new branch ${BRANCH_NAME} and committing changes..."
-        git checkout -b ${BRANCH_NAME}
+        echo "Committing changes directly to main branch..."
+        git checkout main
+        git pull origin main
         git add change-requests/
         git commit -m "Add ISO 13485 Change Request Form for Issue #${ISSUE_NUMBER}"
+        git push origin main
 
-        echo "Fetching latest changes from remote..."
-        git fetch origin
-
-        echo "Attempting to pull latest changes from remote branch ${BRANCH_NAME}..."
-        if git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then
-          git pull origin ${BRANCH_NAME} --rebase
-        else
-          echo "Branch ${BRANCH_NAME} does not exist on remote. Skipping pull."
-        fi
-
-        echo "Pushing changes to new branch ${BRANCH_NAME}..."
-        git push origin ${BRANCH_NAME} || git push origin ${BRANCH_NAME} --force
-
-        echo "Changes committed and pushed to branch ${BRANCH_NAME}."
-
-    - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v5  # Updated to the latest version
-      with:
-        token: ${{ secrets.MY_GITHUB_TOKEN }}
-        commit-message: "Add ISO 13485 Change Request Form for Issue #${{ github.event.issue.number }}"
-        branch: add-change-request-${{ github.event.issue.number }}
-        base: main
-        title: "ISO 13485 Change Request Form for Issue #${{ github.event.issue.number }}"
-        body: "This PR adds an ISO 13485 change request form for issue #${{ github.event.issue.number }}."
+        echo "Changes committed and pushed to main branch."
