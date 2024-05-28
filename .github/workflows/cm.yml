@@ -34,7 +34,7 @@ jobs:
       run: |
         ISSUE_NUMBER=${{ github.event.issue.number }}
         ISSUE_TITLE="${{ github.event.issue.title }}"
-        ISSUE_BODY="${{ github.event.issue.body }}"
+        ISSUE_BODY="${{ github.event.issue.body }}
         DATE=$(date +'%Y-%m-%d')
         ISSUE_DIR="change-requests/CR_${ISSUE_NUMBER}_${DATE}"
 
@@ -99,7 +99,7 @@ jobs:
       with:
         token: ${{ secrets.MY_GITHUB_TOKEN }}
         commit-message: "Add ISO 13485 Change Request Form for Issue #${{ github.event.issue.number }}"
-        branch: add-change-request-${{{ github.event.issue.number }}
+        branch: add-change-request-${{ github.event.issue.number }}
         base: main
         title: "ISO 13485 Change Request Form for Issue #${{ github.event.issue.number }}"
         body: "This PR adds an ISO 13485 change request form for issue #${{ github.event.issue.number }}."
