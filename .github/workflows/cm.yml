@@ -93,8 +93,12 @@ jobs:
         echo "Fetching latest changes from remote..."
         git fetch origin
 
-        echo "Pulling latest changes from remote branch..."
-        git pull origin ${BRANCH_NAME} --rebase
+        echo "Attempting to pull latest changes from remote branch ${BRANCH_NAME}..."
+        if git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then
+          git pull origin ${BRANCH_NAME} --rebase
+        else
+          echo "Branch ${BRANCH_NAME} does not exist on remote. Skipping pull."
+        fi
 
         echo "Pushing changes to new branch ${BRANCH_NAME}..."
         git push origin ${BRANCH_NAME}
