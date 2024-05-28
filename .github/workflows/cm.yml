@@ -51,6 +51,7 @@ jobs:
         # Configure Git and commit the new file
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git checkout main
         git checkout -b add-change-request-${ISSUE_NUMBER}
         git add $FILENAME
         git commit -m "Add Change Request for Issue #${ISSUE_NUMBER}"
@@ -63,5 +64,6 @@ jobs:
         token: ${{ secrets.MY_GITHUB_TOKEN }}
         commit-message: "Add Change Request for Issue #${{ github.event.issue.number }}"
         branch: add-change-request-${{ github.event.issue.number }}
+        base: main
         title: "Change Request for Issue #${{ github.event.issue.number }}"
         body: "This PR adds a change request document for issue #${{ github.event.issue.number }}."
