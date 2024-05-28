@@ -10,7 +10,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4  # Aktualisiert auf die neueste Version
+      uses: actions/checkout@v4  # Updated to the latest version
 
     - name: Set Issue to Specific Status
       if: github.event.issue.state == 'open'
@@ -20,7 +20,7 @@ jobs:
         ISSUE_BODY="${{ github.event.issue.body }}"
 
         echo "Setting issue status..."
-        # Hier kannst du GitHub API verwenden, um den Issue-Status zu setzen, wenn du einen spezifischen Label- oder Statusmechanismus hast
+        # Use GitHub API to set the issue status if you have a specific label or status mechanism
         curl -X POST -H "Authorization: token ${{ secrets.MY_GITHUB_TOKEN }}" \
           -H "Accept: application/vnd.github.v3+json" \
           https://api.github.com/repos/${{ github.repository }}/issues/${ISSUE_NUMBER}/labels \
@@ -30,40 +30,50 @@ jobs:
     - name: Install Git
       run: sudo apt-get update && sudo apt-get install -y git
 
-    - name: Create Change Request Document
+    - name: Create Change Request Folder and Document
       run: |
         ISSUE_NUMBER=${{ github.event.issue.number }}
         ISSUE_TITLE="${{ github.event.issue.title }}"
         ISSUE_BODY="${{ github.event.issue.body }}"
         DATE=$(date +'%Y-%m-%d')
+        ISSUE_DIR="change-requests/CR_${ISSUE_NUMBER}_${DATE}"
 
-        echo "Creating Change Request document..."
-        # Create a new markdown file with the issue content
-        FILENAME="change-requests/CR_${ISSUE_NUMBER}_${DATE}.md"
-        mkdir -p change-requests
-        echo "# Change Request: ${ISSUE_TITLE}" > $FILENAME
-        echo "Issue Number: #${ISSUE_NUMBER}" >> $FILENAME
-        echo "Date: ${DATE}" >> $FILENAME
-        echo "" >> $FILENAME
-        echo "${ISSUE_BODY}" >> $FILENAME
-        echo "Change Request document created at $FILENAME."
+        echo "Creating Change Request directory and document..."
+        # Create a new directory for the issue
+        mkdir -p $ISSUE_DIR
+
+        # Create a markdown file with the ISO 13485 change request form
+        FORM_FILE="$ISSUE_DIR/ISO_13485_Change_Request_Form.md"
+        echo "# ISO 13485 Change Request Form" > $FORM_FILE
+        echo "Issue Number: #${ISSUE_NUMBER}" >> $FORM_FILE
+        echo "Date: ${DATE}" >> $FORM_FILE
+        echo "Title: ${ISSUE_TITLE}" >> $FORM_FILE
+        echo "" >> $FORM_FILE
+        echo "## Change Request Details" >> $FORM_FILE
+        echo "- **Description of Change:**" >> $FORM_FILE
+        echo "- **Reason for Change:**" >> $FORM_FILE
+        echo "- **Risk Assessment:**" >> $FORM_FILE
+        echo "- **Impact on Product Quality:**" >> $FORM_FILE
+        echo "- **Implementation Plan:**" >> $FORM_FILE
+
+        echo "Change Request form created at $FORM_FILE."
 
         # Configure Git and commit the new file
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git checkout main
         git checkout -b add-change-request-${ISSUE_NUMBER}
-        git add $FILENAME
-        git commit -m "Add Change Request for Issue #${ISSUE_NUMBER}"
+        git add $ISSUE_DIR
+        git commit -m "Add ISO 13485 Change Request Form for Issue #${ISSUE_NUMBER}"
         git push origin add-change-request-${ISSUE_NUMBER}
-        echo "Change Request document committed and pushed."
+        echo "Change Request directory and document committed and pushed."
 
     - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v5  # Aktualisiert auf die neueste Version
+      uses: peter-evans/create-pull-request@v5  # Updated to the latest version
       with:
         token: ${{ secrets.MY_GITHUB_TOKEN }}
-        commit-message: "Add Change Request for Issue #${{ github.event.issue.number }}"
+        commit-message: "Add ISO 13485 Change Request Form for Issue #${{ github.event.issue.number }}"
         branch: add-change-request-${{ github.event.issue.number }}
         base: main
-        title: "Change Request for Issue #${{ github.event.issue.number }}"
-        body: "This PR adds a change request document for issue #${{ github.event.issue.number }}."
+        title: "ISO 13485 Change Request Form for Issue #${{ github.event.issue.number }}"
+        body: "This PR adds an ISO 13485 change request form for issue #${{ github.event.issue.number }}."
